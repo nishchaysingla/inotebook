@@ -2,29 +2,37 @@ import React, { useContext, useEffect, useRef , useState} from 'react'
 import noteContext from "../context/notes/noteContext"
 import Noteitem from './Noteitem';
 import AddNote from './AddNote';
-
-const Notes = () => {
+import { useNavigate } from 'react-router-dom';
+const Notes = (props) => {
     const context = useContext(noteContext);
     // eslint-disable-next-line
     const ref = useRef(null)
     const refClose = useRef(null)
+   let navigate = useNavigate();
     const { notes, getNotes, editNote } = context;
     useEffect(() => {
-        getNotes()
+        if(localStorage.getItem('token')){
+            console.log(localStorage.getItem('token'));
+            getNotes()
+        }
+        else{
+                navigate("/login")
+        }
+        
         // eslint-disable-next-line
     }, [])
 
-    const [note, setNote] = useState({id:"" , etitle: "", edescription: "", etag: ""})
-    const updateNote = (currentNote) => {
+    const [note, setNote] = useState({id:"" , etitle: "", edescription: "", etag: ""})                      //this is the note which is displayed on the modal
+    const updateNote = (currentNote) => {                                                                           //this function is called when the icon is clicked and is used to pass the then info of the clicked note which is displayed on the modal initially before any edits
         ref.current.click();
         setNote({id: currentNote._id, etitle: currentNote.title , edescription: currentNote.description, etag: currentNote.tag});
     }
 
-    const handleClick = (e)=>{
+    const handleClick = (e)=>{                                //this function is called when the update is clicked and is used to update the node with the id both at backend and frontend
         console.log("Updating the note", note);
         editNote(note.id, note.etitle, note.edescription, note.etag);
         refClose.current.click();
-        
+        props.showAlert("Updated Successfully", "success")
         e.preventDefault();
         // addNote(note.title, note.description, note.tag);
     }
@@ -36,7 +44,7 @@ const Notes = () => {
 
     return (
         <>
-            <AddNote />
+            <AddNote showAlert={props.showAlert}/>
 
             <button type="button" ref={ref} className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Launch demo modal
@@ -85,7 +93,7 @@ const Notes = () => {
            
                 {notes.map((note) => {
 
-                    return <Noteitem key={note._id} updateNote={updateNote} note={note} />
+                    return <Noteitem key={note._id} updateNote={updateNote} note={note} showAlert={props.showAlert} />
                 })}
             </div>
 
